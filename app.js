@@ -1,3 +1,9 @@
+const session = require('express-session');
+const cookieParser = require('cookie-parser');
+const dotenv = require('dotenv');
+dotenv.config();
+const MongoStore = require('connect-mongo');
+
 const chat = require("./data/chat.js");
 
 const express = require("express");
@@ -8,7 +14,7 @@ const { Server: IOServer } = require("socket.io");
 const httpServer = new HttpServer(app);
 const io = new IOServer(httpServer);
 
-const router = require("./routes")
+const router = require("./routes");
 
 app.set('views', './views');
 app.set('view engine', 'ejs');
@@ -18,6 +24,25 @@ app.use(express.static(__dirname + "/public"));
 app.use(express.json()); 
 app.use(express.urlencoded({ extended: true }));
 app.use("/", router);
+
+app.use(cookieParser());
+
+const advancedOptions = { 
+  useNewUrlParser: true,
+  useUnifiedTopology: true 
+};
+
+app.use(session({
+  store: new MongoStore({ 
+    mongoUrl: process.env.MONGO_URL,
+    mongoOptions: advancedOptions,
+  }),
+  secret: "coder",
+  resave: true,
+  saveUninitialized: true,
+  cookie: { maxAge: 60000 },
+  rolling: true
+}));
 
 io.on('connection', async function(socket) {
   console.log('Cliente Online'); 
