@@ -14,17 +14,6 @@ const { Server: IOServer } = require("socket.io");
 const httpServer = new HttpServer(app);
 const io = new IOServer(httpServer);
 
-const router = require("./routes");
-
-app.set('views', './views');
-app.set('view engine', 'ejs');
-
-//middlewares
-app.use(express.static(__dirname + "/public"));
-app.use(express.json()); 
-app.use(express.urlencoded({ extended: true }));
-app.use("/", router);
-
 app.use(cookieParser());
 
 const advancedOptions = { 
@@ -43,6 +32,18 @@ app.use(session({
   cookie: { maxAge: 60000 },
   rolling: true
 }));
+
+const router = require("./routes");
+
+app.set('views', './views');
+app.set('view engine', 'ejs');
+
+//middlewares
+app.use(express.static(__dirname + "/public"));
+app.use(express.json()); 
+app.use(express.urlencoded({ extended: true }));
+app.use("/", router);
+
 
 io.on('connection', async function(socket) {
   console.log('Cliente Online'); 
