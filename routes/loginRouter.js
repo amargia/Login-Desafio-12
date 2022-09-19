@@ -1,29 +1,32 @@
 const { Router } = require("express");
+const loginController = require("../controller/loginController");
 const loginRouter = Router();
 
 const loginContainer = require("../controller/loginController");
 
 function authorize(req, res, next) {
   if (req.session.user === "admin") {
-    next();
+    return next();
   } else {
     res.status(401).send("No estas autorizado");
   }
 }
 
-loginRouter.get("/", authorize, (req, res) => {
+loginRouter.get("/", (req, res) => {
     res.render("login");
 });
 
-loginRouter.post("/", async (req, res) => {
-    const { username } = req.body;
-    const user = loginContainer.save({ username });
+loginRouter.post("/", (req, res) => {
+  const { username } = req.body
+  loginContainer.save({username}) 
+  .then ((user) => {
     if (user) {
-        req.session.user = user;
-        res.redirect("/");
+      req.session.user = user;      
+      res.redirect('/');
     } else {
-        res.status(401).send("Usuario o contraseña incorrectos");
-    }
+      res.send('Usuario o contraseña incorrectos');
+    }      
+  })
 });
 
 loginRouter.get("/privada" , authorize , (req, res) => {
